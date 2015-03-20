@@ -80,6 +80,9 @@ function renderWindow(node, container, options, windowWidth, windowHeight) {
     var clonedWindow = container.contentWindow;
     var support = new Support(clonedWindow.document);
     var imageLoader = new ImageLoader(options, support);
+    // cloned window does not need URL hash, or scroll 
+    clonedWindow.document.location.hash = "#";
+    clonedWindow.scrollTo(0,0);
     var bounds = getBounds(node);
     var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
     var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);

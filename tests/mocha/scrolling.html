@@ -52,6 +52,23 @@
             }, 0);
         });
 
+        it("with url anchor and specific-element capture, should capture non-scrolled content", function (done) {
+            window.location.hash = "#content";
+            setTimeout(function() {
+              var top = $(window).scrollTop();
+                html2canvas(document.querySelector('#scroll-render')).then(function (canvas) {
+                    window.location.hash = "";
+                    document.body.appendChild(canvas);
+                    expect(canvas.width).to.equal(200);
+                    expect(canvas.height).to.equal(200);
+                    validCanvasPixels(canvas, [255, 0, 0, 255], 0);
+                    done();
+                }).catch(function (error) {
+                    done(error);
+                });
+            }, 10);
+        });
+
         it("with content scroll", function (done) {
             $("#scrollable").scrollTop(500);
             setTimeout(function() {
@@ -60,7 +77,7 @@
                     document.body.appendChild(canvas);
                     expect(canvas.width).to.equal(200);
                     expect(canvas.height).to.equal(200);
-                    validCanvasPixels(canvas);
+                    validCanvasPixels(canvas, [0, 128, 0, 255], 0, 200*199*4);
                     done();
                 }).catch(function (error) {
                     done(error);
@@ -69,11 +86,14 @@
         });
     });
 
-    function validCanvasPixels(canvas) {
+    function validCanvasPixels(canvas, expected, start, end) {
         var ctx = canvas.getContext("2d");
         var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        for (var i = 0, len = 200*199*4; i < len; i+=4) {
-            if (data[i] !== 0 || data[i+1] !== 128 || data[i+2] !== 0 || data[i+3] !== 255) {
+        if (typeof end == 'undefined') {
+          end = data.length;
+        }
+        for (var i = start, len = end; i < len; i+=4) {
+            if (data[i] !== expected[0] || data[i+1] !== expected[1] || data[i+2] !== expected[2] || data[i+3] !== expected[3]) {
                 console.log(i, data[i], data[i+1], data[i+2], data[i+3]);
                 expect().fail("Invalid canvas data");
             }
